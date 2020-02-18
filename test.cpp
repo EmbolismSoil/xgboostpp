@@ -5,7 +5,7 @@
 int main(int argc, const char* argv[])
 {
     auto nsamples = 2;
-    auto xgb = XGBoostPP(argv[1], 4, 3); //特征列有4列, label有3个
+    auto xgb = XGBoostPP(argv[1], 4, 3); //特征列有4列, label有3个, iris例子中分别为三种类型的花，回归任何的话，这里nlabel=1即可
     auto features = xgb.allocFeatures(nsamples);//分配5行特征储存空间
 
     float feats[][4] = 
