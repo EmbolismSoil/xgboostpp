@@ -11,16 +11,17 @@
 #include <cstdlib>
 #include <algorithm>
 #include <Eigen/Eigen>
-
-template<typename M>
-static void vector2Matrix(M& m, const typename M::Scalar * vec, Eigen::Index const rows, Eigen::Index const cols)
-{
-    m = Eigen::Map<const Eigen::Matrix<typename M::Scalar, M::RowsAtCompileTime, M::ColsAtCompileTime, Eigen::RowMajor>>(vec, rows, cols);
-}
+#include <iostream>
 
 class XGBoostPP
 {
 public:
+    template<typename M>
+    static void vector2Matrix(M& m, const typename M::Scalar * vec, Eigen::Index const rows, Eigen::Index const cols)
+    {
+        m = Eigen::Map<const Eigen::Matrix<typename M::Scalar, M::RowsAtCompileTime, M::ColsAtCompileTime, Eigen::RowMajor>>(vec, rows, cols);
+    }
+
     XGBoostPP(std::string const& path, uint64_t const ncol, uint64_t nlabels):
         _modelPath(path),
         _ncol(ncol),
@@ -39,7 +40,7 @@ public:
     {
         DMatrixHandle X;
         const float* data = features.data();
-        auto nrow = features.rows();
+        auto nrow = features.cols();
 
         XGDMatrixCreateFromMat(data, nrow, _ncol, NAN, &X);
         
@@ -57,7 +58,7 @@ public:
             //LOG HERE
             return -1;
         }
-       
+
         vector2Matrix(result, out, nrow, _nlabels); 
         return 0;
     }
