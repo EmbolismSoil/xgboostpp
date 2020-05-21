@@ -1,4 +1,5 @@
 #ifndef __XGBOOSTPP_H__
+
 #define __XGBOOSTPP_H__
 
 #include <string>
@@ -9,70 +10,13 @@
 #include <vector>
 #include <cstdlib>
 #include <algorithm>
+#include <Eigen/Eigen>
 
-template<class T>
-class Features
+template<typename M>
+static void vector2Matrix(M& m, const typename M::Scalar * vec, Eigen::Index const rows, Eigen::Index const cols)
 {
-public:
-    Features(uint64_t const nrow, uint64_t ncol):
-        _ncol(ncol),
-        _nrow(nrow)
-    {
-        _data = static_cast<T*>(std::malloc(sizeof(T)*_ncol*_nrow));
-        if (!_data){
-            //LOG HERE
-            _data = nullptr;
-        }     
-
-        T initvalue(0);
-        for (auto i = 0; i < _ncol*_nrow; ++i){
-            _data[i] = initvalue;
-        }
-    }
-
-    T* row(uint32_t n)
-    {
-        if (_nrow <= n){
-            //LOG HERE
-            return nullptr;
-        }
-
-        if (!_data){
-            //LOG HERE
-            return nullptr;
-        }
-
-        return _data + n*_ncol;
-    }
-
-    uint64_t nrow() const
-    {
-        return _nrow;
-    }
-
-    uint64_t ncols() const
-    {
-        return _ncol;
-    }
-
-    const T* data(void) const
-    {
-        return _data;
-    }
-
-    virtual ~Features()
-    {
-        if (_data){
-            std::free(static_cast<void*>(_data));
-        }
-    }
-
-private:
-    uint64_t const _ncol;
-    uint64_t const _nrow;
-    T* _data;
-};
-
+    m = Eigen::Map<const Eigen::Matrix<typename M::Scalar, M::RowsAtCompileTime, M::ColsAtCompileTime, Eigen::RowMajor>>(vec, rows, cols);
+}
 
 class XGBoostPP
 {
@@ -91,24 +35,21 @@ public:
         }        
     }
 
-    int predict(std::shared_ptr<Features<float>> const features, std::vector<std::vector<float>>& vec)
+    int predict(Eigen::MatrixXf const& features, Eigen::MatrixXf& result)
     {
         DMatrixHandle X;
-        const float* data = features->data();
-        auto nrow = features->nrow();
+        const float* data = features.data();
+        auto nrow = features.rows();
 
         XGDMatrixCreateFromMat(data, nrow, _ncol, NAN, &X);
         
         const float* out;
         uint64_t l;
-        auto ret = XGBoosterPredict(_booster, X, 0, 0,  &l, &out);
+        auto ret = XGBoosterPredict(_booster, X, 0, 0, 0, &l, &out);
         if (ret < 0){
             // LOG HERE
             return -1;
         }
-
-        std::vector<float> tmp;
-        std::copy(out, out + nrow*_nlabels, std::back_inserter(tmp));
 
         XGDMatrixFree(X);
         
@@ -116,24 +57,9 @@ public:
             //LOG HERE
             return -1;
         }
-        
-        for (auto i = 0; i < nrow*_nlabels; i += _nlabels){
-            std::vector<float> r;
-            std::copy(out+i, out+i+_nlabels, std::back_inserter(r));
-            vec.emplace_back(std::move(r));
-        }
-
+       
+        vector2Matrix(result, out, nrow, _nlabels); 
         return 0;
-    }
-
-    std::shared_ptr<Features<float>> allocFeatures(uint64_t nrow)
-    {
-        auto features = std::make_shared<Features<float>>(nrow, _ncol);
-        if (!features->data()){
-            return nullptr;
-        }
-
-        return features;
     }
 
     virtual ~XGBoostPP(){
