@@ -17,7 +17,7 @@ int main(int argc, const char* argv[])
         4.9, 3.0, 1.4, 0.2
     };
     
-    Eigen::MatrixXf features; 
+    Eigen::Matrix<float, -1, -1, Eigen::RowMajor> features; 
     XGBoostPP::vector2Matrix(features, feats, 2, 4);
     Eigen::MatrixXf y;
     auto ret = xgb.predict(features, y);

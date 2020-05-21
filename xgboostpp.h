@@ -36,12 +36,11 @@ public:
         }        
     }
 
-    int predict(Eigen::MatrixXf const& features, Eigen::MatrixXf& result)
+    int predict(Eigen::Matrix<float, -1, -1, Eigen::RowMajor> const& features, Eigen::MatrixXf& result)
     {
-        Eigen::MatrixXf f = features.transpose();
         DMatrixHandle X;
-        const float* data = f.data();
-        auto nrow = f.cols();
+        const float* data = features.data();
+        auto nrow = features.rows();
 
         XGDMatrixCreateFromMat(data, nrow, _ncol, NAN, &X);
         
