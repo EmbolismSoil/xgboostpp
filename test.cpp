@@ -20,7 +20,7 @@ int main(int argc, const char* argv[])
     Eigen::MatrixXf features; 
     XGBoostPP::vector2Matrix(features, feats, 2, 4);
     Eigen::MatrixXf y;
-    auto ret = xgb.predict(features.transpose(), y);
+    auto ret = xgb.predict(features, y);
     if (ret != 0){
         std::cout << "predict error" << std::endl;
     }
