@@ -23,9 +23,8 @@ public:
         m = Eigen::Map<const Eigen::Matrix<typename M::Scalar, M::RowsAtCompileTime, M::ColsAtCompileTime, Eigen::RowMajor>>(vec, rows, cols);
     }
 
-    XGBoostPP(std::string const& path, uint64_t const ncol, uint64_t nlabels):
+    XGBoostPP(std::string const& path, uint64_t nlabels):
         _modelPath(path),
-        _ncol(ncol),
         _nlabels(nlabels)
     {
        
@@ -41,9 +40,10 @@ public:
     {
         DMatrixHandle X;
         const float* data = features.data();
-        auto nrow = features.rows();
+        auto const nrow = features.rows();
+        auto const nrow = features.cols();
 
-        XGDMatrixCreateFromMat(data, nrow, _ncol, NAN, &X);
+        XGDMatrixCreateFromMat(data, nrow, ncol, NAN, &X);
         
         const float* out;
         uint64_t l;
@@ -71,7 +71,6 @@ public:
 private:
     std::string const _modelPath;
     BoosterHandle _booster;
-    uint64_t const _ncol;
     uint64_t const _nlabels;
 };
 
