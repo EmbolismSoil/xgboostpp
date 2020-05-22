@@ -16,6 +16,7 @@
 class XGBoostPP
 {
 public:
+    typedef Eigen::Matrix<float, -1, -1, Eigen::RowMajor> Matrix;
     template<typename M>
     static void vector2Matrix(M& m, const typename M::Scalar * vec, Eigen::Index const rows, Eigen::Index const cols)
     {
@@ -36,7 +37,7 @@ public:
         }        
     }
 
-    int predict(Eigen::Matrix<float, -1, -1, Eigen::RowMajor> const& features, Eigen::MatrixXf& result)
+    int predict(Matrix const& features, Matrix& result)
     {
         DMatrixHandle X;
         const float* data = features.data();
